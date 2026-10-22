@@ -17,6 +17,6 @@ namespace CinemaDomain
 
         public string FormaPagamento { get; set; }
 
-        public System.Collections.Generic.List<IngressoItem> IngressoItens { get; set; }
+        public List<IngressoItem> IngressoItens { get; set; }
     }
 }

@@ -23,13 +23,13 @@ namespace CinemaRepository.Base
 
         public TypeEntity ReadbyId(int id)
         {
-            var dbContext = _myDBContext.Set<TypeEntity>().AsQueryable;
+            var dbContext = _myDBContext.Set<TypeEntity>().AsQueryable();
             return dbContext.ToList().Find(x => x.Id == id);
         }
 
         public IList<TypeEntity> ReadAll()
         {
-            var dbContext = _myDBContext.Set<TypeEntity>().AsQueryable;
+            var dbContext = _myDBContext.Set<TypeEntity>().AsQueryable();
             return dbContext.ToList();
         }
 

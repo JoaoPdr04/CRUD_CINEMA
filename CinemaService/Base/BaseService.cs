@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using AutoMapper;
-using CinemaRepository.Base;
+﻿using AutoMapper;
 using CinemaDomain.Base;
+using CinemaRepository.Base;
 using FluentValidation;
 using Microsoft.IdentityModel.Tokens.Experimental;
 
@@ -20,44 +17,49 @@ namespace CinemaService.Base
             _mapper = mapper;
         }
 
-        public void Validated (TypeEntity obj, AbstractValidator<TypeEntity> validator)
+        private void Validate(TypeEntity obj, AbstractValidator<TypeEntity> validator)
         {
             validator.ValidateAndThrow(obj);
         }
 
-        public TypeOutputModel Create<TypeInputModel, TypeOutputModel, TypeValidator>(TypeValidator entity)
+        public TypeOutputModel Create<TypeInputModel, TypeOutputModel, TypeValidator>(TypeEntity entity)
             where TypeInputModel : class
             where TypeOutputModel : class
             where TypeValidator : AbstractValidator<TypeEntity>
         {
             var e = _mapper.Map<TypeEntity>(entity);
-            Validated(e, Activator.CreateInstance<TypeValidator>());
+            Validate(e, Activator.CreateInstance<TypeValidator>());
             _baseRepository.Create(e);
             var outputModel = _mapper.Map<TypeOutputModel>(e);
             return outputModel;
         }
 
-        public void Delete(int id)
+        public TypeOutputModel ReadById<TypeOutputModel>(int id) where TypeOutputModel : class
         {
-            throw new NotImplementedException();
+            var entity = _baseRepository.ReadbyId(id);
+            return _mapper.Map<TypeOutputModel>(entity);
         }
 
         public IEnumerable<TypeOutputModel> ReadAll<TypeOutputModel>() where TypeOutputModel : class
         {
-            throw new NotImplementedException();
+            var entities = _baseRepository.ReadAll();
+            return entities.Select(e => _mapper.Map<TypeOutputModel>(e));
         }
 
-        public TypeOutputModel ReadbyId<TypeOutputModel>(int id) where TypeOutputModel : class
-        {
-            throw new NotImplementedException();
-        }
-
-        public TypeOutputModel Update<TypeInputModel, TypeOutputModel, TypeValidator>(TypeValidator entity)
+        public TypeOutputModel Update<TypeInputModel, TypeOutputModel, TypeValidator>(TypeEntity entity)
             where TypeInputModel : class
             where TypeOutputModel : class
             where TypeValidator : AbstractValidator<TypeEntity>
         {
-            throw new NotImplementedException();
+            var e = _mapper.Map<TypeEntity>(entity);
+            Validate(e, Activator.CreateInstance<TypeValidator>());
+            _baseRepository.Update(e);
+            return _mapper.Map<TypeOutputModel>(e);
+        }
+
+        public void Delete(int id)
+        {
+            _baseRepository.Delete(id);
         }
     }
 }

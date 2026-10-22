@@ -1,8 +1,4 @@
 ﻿using CinemaDomain.Base;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Query.ExpressionTranslators.Internal;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CinemaRepository.Base
 {

@@ -14,9 +14,9 @@ namespace CinemaRepository.Context
         public DbSet<Ingresso> Ingresso { get; set; }
         public DbSet<IngressoItem> IngressoItem { get; set; }
 
-        public MyDBContext()
+        public MyDBContext(DbContextOptions<MyDBContext> options) : base(options)
         {
-            Database.EnsureCreated();
+           // Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,7 +35,7 @@ namespace CinemaRepository.Context
             if (!optionsBuilder.IsConfigured)
             {
                 // Aqui vai o endereço do seu PostgreSQL local
-                optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=CinemaDB;Username=postgres;Password=SUA_SENHA_AQUI");
+                optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=CinemaDB;Username=postgres;Password=ifsp");
             }
         }
 

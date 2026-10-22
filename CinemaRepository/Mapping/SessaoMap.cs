@@ -12,7 +12,7 @@ namespace CinemaRepository.Mapping
         {
             builder.ToTable("SESSAO");
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.Nome).HasMaxLength(100).IsRequired().HasColumnName("NOME");
+            //builder.Property(x => x.Nome).HasMaxLength(100).IsRequired().HasColumnName("NOME");
 
         }
     }

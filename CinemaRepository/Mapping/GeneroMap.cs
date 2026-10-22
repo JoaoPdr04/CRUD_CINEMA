@@ -10,9 +10,9 @@ namespace CinemaRepository.Mapping
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Genero> builder)
         {
-            builder.ToTable("EXEMPLO");
+            builder.ToTable("Genero");
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.Nome).HasMaxLength(100).IsRequired().HasColumnName("NOME");
+            builder.Property(x => x.Nome).HasMaxLength(100).IsRequired().HasColumnName("Nome");
         }
     }
 }

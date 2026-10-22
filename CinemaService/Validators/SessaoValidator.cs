@@ -10,7 +10,7 @@ namespace CinemaService.Validators
     {
         public SessaoValidator()
         {
-            RuleFor(s => s.Horario)
+            RuleFor(s => s.Data)
                 .NotEmpty().WithMessage("Horário da sessão deve ser informado")
                 .NotNull().WithMessage("Horário da sessão deve ser informado");
 
