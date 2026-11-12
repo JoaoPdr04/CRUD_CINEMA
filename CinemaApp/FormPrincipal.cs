@@ -11,16 +11,17 @@ namespace CinemaApp
         {
             InitializeComponent();
         }
-
         private void gêneroToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CadastroGenero cadastroGenero = ConfigureDI.ServiceProvider.GetService<CadastroGenero>();
-            cadastroGenero.ShowDialog(); // Em vez de cadastroGenero.MdiParent = this; e .Show();
+            using var scope = ConfigureDI.ServiceProvider.CreateScope();
+            var cadastroGenero = scope.ServiceProvider.GetRequiredService<CadastroGenero>();
+            cadastroGenero.ShowDialog();
         }
 
         private void filmeToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            CadastroFilme cadastroFilme = ConfigureDI.ServiceProvider.GetService<CadastroFilme>();
+            using var scope = ConfigureDI.ServiceProvider.CreateScope();
+            var cadastroFilme = scope.ServiceProvider.GetRequiredService<CadastroFilme>();
             cadastroFilme.ShowDialog();
         }
     }

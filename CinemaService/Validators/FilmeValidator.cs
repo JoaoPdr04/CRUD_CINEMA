@@ -13,12 +13,12 @@ namespace CinemaService.Validators
             RuleFor(f => f.Nome)
                 .NotEmpty().WithMessage("Filme deve ser informado")
                 .NotNull().WithMessage("Filme deve ser informado")
-                .Length(5, 50).WithMessage("Filme deve conter entre 5 e 50 caracteres");
+                .Length(1, 50).WithMessage("Filme deve conter entre 1 e 50 caracteres");
 
             RuleFor(f => f.Classificacao)
                 .NotEmpty().WithMessage("Classificação deve ser informada")
                 .NotNull().WithMessage("Classificação deve ser informada")
-                .Length(5, 50).WithMessage("Classificação deve conter entre 5 e 50 caracteres");
+                .Length(1, 50).WithMessage("Classificação deve conter entre 1 e 50 caracteres");
 
             RuleFor(f => f.Duracao)
                 .NotEmpty().WithMessage("Duração deve ser informada")

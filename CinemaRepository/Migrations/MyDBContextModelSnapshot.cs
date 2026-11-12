@@ -17,17 +17,18 @@ namespace CinemaRepository.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("CinemaDomain.Filme", b =>
                 {
-                    b.Property<string>("Nome")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("NOME");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Classificacao")
                         .IsRequired()
@@ -40,10 +41,13 @@ namespace CinemaRepository.Migrations
                     b.Property<int>("GeneroId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("NOME");
 
-                    b.HasKey("Nome");
+                    b.HasKey("Id");
 
                     b.HasIndex("GeneroId");
 
@@ -168,9 +172,8 @@ namespace CinemaRepository.Migrations
                     b.Property<DateTime>("Data")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("FilmeNome")
-                        .IsRequired()
-                        .HasColumnType("character varying(100)");
+                    b.Property<int>("FilmeId")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Preco")
                         .HasColumnType("numeric");
@@ -180,7 +183,7 @@ namespace CinemaRepository.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FilmeNome");
+                    b.HasIndex("FilmeId");
 
                     b.HasIndex("SalaId");
 
@@ -192,7 +195,7 @@ namespace CinemaRepository.Migrations
                     b.HasOne("CinemaDomain.Genero", "Genero")
                         .WithMany()
                         .HasForeignKey("GeneroId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Genero");
@@ -224,7 +227,7 @@ namespace CinemaRepository.Migrations
                 {
                     b.HasOne("CinemaDomain.Filme", "Filme")
                         .WithMany()
-                        .HasForeignKey("FilmeNome")
+                        .HasForeignKey("FilmeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

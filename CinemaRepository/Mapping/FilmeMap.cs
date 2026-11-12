@@ -12,10 +12,13 @@ namespace CinemaRepository.Mapping
         public void Configure(EntityTypeBuilder<Filme> builder)
         {
             builder.ToTable("MOVIE");
-            builder.HasKey(x => x.Nome);
+            builder.HasKey(x => x.Id);
             builder.Property(x => x.Nome).HasMaxLength(100).IsRequired().HasColumnName("NOME");
             builder.Property(x => x.Duracao).IsRequired().HasColumnName("DURACAO");
-            builder.HasOne(x => x.Genero).WithMany().IsRequired(true); //relacionamento com gênero
+            builder.HasOne(x => x.Genero)
+                   .WithMany()
+                   .IsRequired(true)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
