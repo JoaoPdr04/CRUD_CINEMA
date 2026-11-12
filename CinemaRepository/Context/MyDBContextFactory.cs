@@ -8,11 +8,7 @@ namespace CinemaRepository.Context
         public MyDBContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<MyDBContext>();
-
-            // A mesma string de ligação que utilizou com sucesso nos testes
-            var conStr = "Host=localhost;Port=5432;Database=CinemaDB;Username=postgres;Password=ifsp";
-            optionsBuilder.UseNpgsql(conStr);
-
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=CinemaDB;Username=postgres;Password=ifsp;");
             return new MyDBContext(optionsBuilder.Options);
         }
     }

@@ -25,6 +25,13 @@ namespace CinemaRepository.Base
                 foreach (var navegacao in entityType.GetNavigations())
                 {
                     query = query.Include(navegacao.Name);
+
+                    // Segundo nível (ex.: Ingresso -> Sessao -> Filme), sem voltar para a própria entidade
+                    foreach (var subNavegacao in navegacao.TargetEntityType.GetNavigations()
+                                 .Where(n => !n.IsCollection && n.TargetEntityType != entityType))
+                    {
+                        query = query.Include($"{navegacao.Name}.{subNavegacao.Name}");
+                    }
                 }
             }
             return query;

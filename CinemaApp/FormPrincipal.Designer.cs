@@ -93,8 +93,9 @@
             // ingressoToolStripMenuItem
             // 
             ingressoToolStripMenuItem.Name = "ingressoToolStripMenuItem";
-            ingressoToolStripMenuItem.Size = new Size(118, 22);
+            ingressoToolStripMenuItem.Size = new Size(180, 22);
             ingressoToolStripMenuItem.Text = "Ingresso";
+            ingressoToolStripMenuItem.Click += ingressoToolStripMenuItem_Click;
             // 
             // FormPrincipal
             // 

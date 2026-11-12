@@ -48,8 +48,15 @@ namespace CinemaApp.Infra
                     .ForMember(dest => dest.GeneroId, opt => opt.MapFrom(src => src.Genero.Id))
                     .ForMember(dest => dest.GeneroNome, opt => opt.MapFrom(src => src.Genero.Nome));
                 config.CreateMap<Sala, SalaViewModel>().ReverseMap();
-                config.CreateMap<Sessao, SessaoViewModel>().ReverseMap();
-                config.CreateMap<Ingresso, IngressoViewModel>().ReverseMap();
+
+                // Só leitura (entidade -> ViewModel): o AutoMapper não acha sozinho estes dois campos
+                config.CreateMap<Sessao, SessaoViewModel>()
+                    .ForMember(dest => dest.Classificacao, opt => opt.MapFrom(src => src.Filme.Classificacao));
+
+                config.CreateMap<Ingresso, IngressoViewModel>()
+                    .ForMember(dest => dest.Filme, opt => opt.MapFrom(src => src.Sessao.Filme.Nome))
+                    .ForMember(dest => dest.Classificacao, opt => opt.MapFrom(src => src.Sessao.Filme.Classificacao));
+
                 config.CreateMap<IngressoItem, IngressoItemViewModel>().ReverseMap();
             }, NullLoggerFactory.Instance);
 
@@ -62,6 +69,7 @@ namespace CinemaApp.Infra
             Services.AddTransient<CadastroFilme>();
             Services.AddTransient<CadastroSala>();
             Services.AddTransient<CadastroSessao>();
+            Services.AddTransient<CadastroIngresso>();
             #endregion
 
             ServiceProvider = Services.BuildServiceProvider();

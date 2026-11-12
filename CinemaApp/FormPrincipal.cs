@@ -38,5 +38,12 @@ namespace CinemaApp
             var cadastroSessao = scope.ServiceProvider.GetRequiredService<CadastroSessao>();
             cadastroSessao.ShowDialog();
         }
+
+        private void ingressoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using var scope = ConfigureDI.ServiceProvider.CreateScope();
+            var cadastroIngresso = scope.ServiceProvider.GetRequiredService<CadastroIngresso>();
+            cadastroIngresso.ShowDialog();
+        }
     }
 }
