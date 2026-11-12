@@ -74,12 +74,14 @@
             salaToolStripMenuItem.Name = "salaToolStripMenuItem";
             salaToolStripMenuItem.Size = new Size(180, 22);
             salaToolStripMenuItem.Text = "Sala";
+            salaToolStripMenuItem.Click += salaToolStripMenuItem_Click;
             // 
             // sessãoToolStripMenuItem
             // 
             sessãoToolStripMenuItem.Name = "sessãoToolStripMenuItem";
             sessãoToolStripMenuItem.Size = new Size(180, 22);
             sessãoToolStripMenuItem.Text = "Sessão";
+            sessãoToolStripMenuItem.Click += sessãoToolStripMenuItem_Click;
             // 
             // vendaToolStripMenuItem
             // 

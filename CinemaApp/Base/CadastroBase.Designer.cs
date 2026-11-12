@@ -65,7 +65,7 @@
             // 
             tabPageCadastro.Controls.Add(btnSalvar);
             tabPageCadastro.Controls.Add(btnCancelar);
-            tabPageCadastro.ImageKey = "register.png";
+            tabPageCadastro.ImageKey = "pessoa.png";
             tabPageCadastro.Location = new Point(4, 24);
             tabPageCadastro.Name = "tabPageCadastro";
             tabPageCadastro.Padding = new Padding(3);
@@ -124,7 +124,7 @@
             tabPageConsulta.Controls.Add(btnExcluir);
             tabPageConsulta.Controls.Add(btnEditar);
             tabPageConsulta.Controls.Add(btnNovo);
-            tabPageConsulta.ImageKey = "find.png";
+            tabPageConsulta.ImageKey = "lupa.png";
             tabPageConsulta.Location = new Point(4, 24);
             tabPageConsulta.Name = "tabPageConsulta";
             tabPageConsulta.Padding = new Padding(3);
@@ -225,7 +225,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(542, 375);
             Controls.Add(tabControlCadastro);
-            DrawerTabControl = null;
+            DrawerTabControl = tabControlCadastro;
             DrawerUsePreProcessIcons = false;
             Name = "CadastroBase";
             StartPosition = FormStartPosition.CenterScreen;

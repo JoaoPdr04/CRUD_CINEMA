@@ -1,5 +1,7 @@
 ﻿using CinemaApp.Cadastros;
+using CinemaApp.Models;
 using CinemaDomain;
+using AutoMapper;
 using CinemaRepository.Base;
 using CinemaRepository.Context;
 using CinemaService.Base;
@@ -39,22 +41,30 @@ namespace CinemaApp.Infra
             #endregion
 
             #region AutoMapper Injeção de Dependência
-            Services.AddSingleton(new AutoMapper.MapperConfiguration(cfg =>
+            var mapperConfig = new MapperConfiguration(config =>
             {
-                cfg.CreateMap<Genero, Genero>();
-                cfg.CreateMap<Filme, Filme>();
-                cfg.CreateMap<Sala, Sala>();
-                cfg.CreateMap<Sessao, Sessao>();
-                cfg.CreateMap<Ingresso, Ingresso>();
-            }, NullLoggerFactory.Instance).CreateMapper());
+                config.CreateMap<Genero, GeneroViewModel>().ReverseMap();
+                config.CreateMap<Filme, FilmeViewModel>()
+                    .ForMember(dest => dest.GeneroId, opt => opt.MapFrom(src => src.Genero.Id))
+                    .ForMember(dest => dest.GeneroNome, opt => opt.MapFrom(src => src.Genero.Nome));
+                config.CreateMap<Sala, SalaViewModel>().ReverseMap();
+                config.CreateMap<Sessao, SessaoViewModel>().ReverseMap();
+                config.CreateMap<Ingresso, IngressoViewModel>().ReverseMap();
+                config.CreateMap<IngressoItem, IngressoItemViewModel>().ReverseMap();
+            }, NullLoggerFactory.Instance);
+
+            Services.AddSingleton(mapperConfig.CreateMapper());
 
             #endregion
 
-            Services.AddTransient<CadastroGenero, CadastroGenero>();
-            Services.AddTransient<CadastroFilme, CadastroFilme>();
+            #region Injeção de Dependência de Formulários
+            Services.AddTransient<CadastroGenero>();
+            Services.AddTransient<CadastroFilme>();
+            Services.AddTransient<CadastroSala>();
+            Services.AddTransient<CadastroSessao>();
+            #endregion
 
             ServiceProvider = Services.BuildServiceProvider();
-            Console.WriteLine("ServiceProvider inicializado com sucesso.");
         }
     }
 }

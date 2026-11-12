@@ -1,7 +1,9 @@
 ﻿using CinemaApp.Base;
+using CinemaApp.Models;
 using CinemaDomain;
 using CinemaService.Base;
 using CinemaService.Validators;
+using static System.Net.WebRequestMethods;
 
 namespace CinemaApp.Cadastros
 {
@@ -9,8 +11,8 @@ namespace CinemaApp.Cadastros
     {
         private readonly IBaseService<Filme> _filmeService;
         private readonly IBaseService<Genero> _generoService;
-        private List<Filme> _filmes;
-        private Filme _filme;
+        private List<FilmeViewModel> _filmes;
+        private List<GeneroViewModel> _generos;
 
         public CadastroFilme(IBaseService<Filme> filmeService, IBaseService<Genero> generoService)
         {
@@ -24,10 +26,10 @@ namespace CinemaApp.Cadastros
         {
             try
             {
-                var generos = _generoService.ReadAll<Genero>().ToList();
+                var generos = _generoService.ReadAll<GeneroViewModel>().ToList();
                 cboGenero.DataSource = generos;
-                cboGenero.DisplayMember = "Nome";
-                cboGenero.ValueMember = "Id";
+                cboGenero.DisplayMember = nameof(GeneroViewModel.Nome);
+                cboGenero.ValueMember = nameof(GeneroViewModel.Id);
                 cboGenero.SelectedIndex = -1;
             }
             catch (Exception ex)
@@ -42,16 +44,10 @@ namespace CinemaApp.Cadastros
             filme.Nome = txtNome.Text;
             filme.Classificacao = txtClassificacao.Text;
 
-            // Converte a duração para número (int)
             int.TryParse(txtDuracao.Text, out int duracao);
             filme.Duracao = duracao;
 
-            // Vincula o objeto Genero selecionado no ComboBox
-            if (cboGenero.SelectedItem is Genero generoSelecionado)
-            {
-                filme.Genero = generoSelecionado;
-            }
-            else if (cboGenero.SelectedValue != null)
+            if (cboGenero.SelectedValue != null)
             {
                 int idGenero = Convert.ToInt32(cboGenero.SelectedValue);
                 filme.Genero = _generoService.ReadById<Genero>(idGenero);
@@ -74,66 +70,49 @@ namespace CinemaApp.Cadastros
         {
             try
             {
-                if (IsEditMode && _filme != null)
+                if (IsEditMode)
                 {
-                    PreencheObjeto(_filme);
-                    _filmeService.Update<Filme, Filme, FilmeValidator>(_filme);
-                    MessageBox.Show("Filme atualizado com sucesso!", "Sucesso",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var id = Convert.ToInt32(txtId.Text);
+                    var filme = _filmeService.ReadById<Filme>(id);
+                    PreencheObjeto(filme);
+                    _filmeService.Update<Filme, Filme, FilmeValidator>(filme);
                 }
                 else
                 {
                     var filme = new Filme();
                     PreencheObjeto(filme);
                     _filmeService.Create<Filme, Filme, FilmeValidator>(filme);
-                    MessageBox.Show("Filme salvo com sucesso!", "Sucesso",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
-                IsEditMode = false;
-                _filme = null;
-
-                CarregaGrid();
                 tabControlCadastro.SelectedIndex = 1;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.InnerException?.Message ?? ex.Message, "Erro no Banco de Dados",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         protected override void CarregaGrid()
         {
-            _filmes = _filmeService.ReadAll<Filme>().ToList();
+            _filmes = _filmeService.ReadAll<FilmeViewModel>().ToList();
             dataGridViewConsulta.DataSource = _filmes;
 
             dataGridViewConsulta.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewConsulta.MultiSelect = false;
 
-            if (dataGridViewConsulta.Columns["Nome"] != null)
+            if (dataGridViewConsulta.Columns["GeneroId"] != null)
             {
-                dataGridViewConsulta.Columns["Nome"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dataGridViewConsulta.Columns["GeneroId"].Visible = false;
             }
         }
 
         protected override void CarregarRegistro(DataGridViewRow row)
         {
-            if (row.DataBoundItem is Filme filmeGrid)
-            {
-                _filme = _filmeService.ReadById<Filme>(filmeGrid.Id);
-            }
-            else if (row.Cells["Id"] != null && row.Cells["Id"].Value != null)
-            {
-                int id = Convert.ToInt32(row.Cells["Id"].Value);
-                _filme = _filmeService.ReadById<Filme>(id);
-            }
+            var id = Convert.ToInt32(row.Cells["Id"].Value);
+            var filme = _filmeService.ReadById<Filme>(id);
 
-            if (_filme != null)
-            {
-                txtId.Text = _filme.Id.ToString();
-                PreencheTela(_filme);
-            }
+            txtId.Text = filme.Id.ToString();
+            PreencheTela(filme);
         }
 
         protected override void Deletar(int id)
