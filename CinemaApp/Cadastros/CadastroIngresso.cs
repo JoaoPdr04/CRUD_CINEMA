@@ -15,7 +15,6 @@ namespace CinemaApp.Cadastros
         private List<FilmeViewModel> _filmes = new();
         private List<SessaoViewModel> _sessoes = new();
         private List<IngressoItem> _itens = new();
-        private int _id;
 
         public CadastroIngresso(
             IBaseService<Ingresso> ingressoService,
@@ -257,10 +256,7 @@ namespace CinemaApp.Cadastros
 
             dataGridViewIngressos.EndEdit();
             ingresso.Documento = txtDocumento.Text.Trim();
-            // A data da compra só é definida na criação. Fica marcada como UTC apenas para o
-            // Npgsql aceitar (mesma ideia usada na Sessão: guarda o horário do relógio).
-            if (!IsEditMode)
-                ingresso.DataCompra = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+            ingresso.DataCompra = DateTime.Now;
             ingresso.FormaPagamento = cboFormaPagamento.Text;
             ingresso.Sessao = _sessaoService.ReadById<Sessao>(Convert.ToInt32(cboSessao.SelectedValue));
             ingresso.IngressoItens = _itens;
@@ -296,7 +292,7 @@ namespace CinemaApp.Cadastros
             {
                 if (IsEditMode)
                 {
-                    var ingresso = _ingressoService.ReadById<Ingresso>(_id);
+                    var ingresso = _ingressoService.ReadById<Ingresso>(Convert.ToInt32(txtId.Text));
                     PreencheObjeto(ingresso);
                     _ingressoService.Update<Ingresso, Ingresso, IngressoValidator>(ingresso);
                 }
@@ -307,13 +303,11 @@ namespace CinemaApp.Cadastros
                     _ingressoService.Create<Ingresso, Ingresso, IngressoValidator>(ingresso);
                 }
 
-                IsEditMode = false;
-                CarregaGrid();
                 tabControlCadastro.SelectedIndex = 1;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.InnerException?.Message ?? ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -338,7 +332,7 @@ namespace CinemaApp.Cadastros
         {
             var id = Convert.ToInt32(row.Cells[nameof(IngressoViewModel.Id)].Value);
             var ingresso = _ingressoService.ReadById<Ingresso>(id);
-            _id = ingresso.Id;
+            txtId.Text = ingresso.Id.ToString();
             PreencheTela(ingresso);
         }
     }
