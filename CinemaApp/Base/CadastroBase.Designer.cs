@@ -48,10 +48,10 @@
             // 
             // tabControlCadastro
             // 
+            tabControlCadastro.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tabControlCadastro.Controls.Add(tabPageCadastro);
             tabControlCadastro.Controls.Add(tabPageConsulta);
             tabControlCadastro.Depth = 0;
-            tabControlCadastro.Dock = DockStyle.Fill;
             tabControlCadastro.ImageList = imageListMenu;
             tabControlCadastro.Location = new Point(3, 64);
             tabControlCadastro.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.HOVER;
@@ -226,7 +226,7 @@
             ClientSize = new Size(542, 375);
             Controls.Add(tabControlCadastro);
             DrawerTabControl = tabControlCadastro;
-            DrawerUsePreProcessIcons = false;
+            DrawerUsePreProcessIcons = true;
             Name = "CadastroBase";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "CadastroBase";

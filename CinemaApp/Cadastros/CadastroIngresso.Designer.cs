@@ -58,7 +58,7 @@
             tabPageCadastro.Controls.Add(txtValorTotal);
             tabPageCadastro.Controls.Add(cboFormaPagamento);
             tabPageCadastro.Controls.Add(txtDocumento);
-            tabPageCadastro.Size = new Size(636, 505);
+          //  tabPageCadastro.Size = new Size(636, 505);
             tabPageCadastro.Controls.SetChildIndex(txtDocumento, 0);
             tabPageCadastro.Controls.SetChildIndex(cboFormaPagamento, 0);
             tabPageCadastro.Controls.SetChildIndex(txtValorTotal, 0);
@@ -71,7 +71,7 @@
             // 
             // tabControlCadastro
             // 
-            tabControlCadastro.Size = new Size(644, 533);
+           // tabControlCadastro.Size = new Size(644, 533);
             // 
             // txtDocumento
             // 

@@ -19,6 +19,20 @@ namespace CinemaApp.Cadastros
             _filmeService = filmeService;
             _generoService = generoService;
             InitializeComponent();
+
+            InitializeComponent();
+
+            this.MinimumSize = Size.Empty;
+            this.MaximumSize = Size.Empty;
+            this.ClientSize = new Size(560, 445);
+
+            tabControlCadastro.Location = new Point(3, 64);
+            tabControlCadastro.Size = new Size(554, 378);
+            tabPageCadastro.Size = new Size(546, 350);
+
+            btnCancelar.Location = new Point(358, 302);
+            btnSalvar.Location = new Point(462, 302);
+
             CarregaComboboxGenero();
         }
 

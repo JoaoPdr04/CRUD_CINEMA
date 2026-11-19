@@ -14,6 +14,9 @@ namespace CinemaService.Validators
                 .NotEmpty().WithMessage("Horário da sessão deve ser informado")
                 .NotNull().WithMessage("Horário da sessão deve ser informado");
 
+            RuleFor(s => s.Preco)
+                .GreaterThan(0).WithMessage("Preço da sessão deve ser maior que zero");
+
             RuleFor(s => s.Sala)
                 .NotNull().WithMessage("Sala da sessão deve ser informada");
 

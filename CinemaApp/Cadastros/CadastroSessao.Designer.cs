@@ -48,7 +48,6 @@
             tabPageCadastro.Controls.Add(cboSala);
             tabPageCadastro.Controls.Add(dtpData);
             tabPageCadastro.Controls.Add(dtpHora);
-            tabPageCadastro.Size = new Size(486, 344);
             tabPageCadastro.Controls.SetChildIndex(dtpHora, 0);
             tabPageCadastro.Controls.SetChildIndex(dtpData, 0);
             tabPageCadastro.Controls.SetChildIndex(cboSala, 0);
@@ -59,7 +58,6 @@
             // 
             // tabControlCadastro
             // 
-            tabControlCadastro.Size = new Size(494, 372);
             // 
             // cboFilme
             // 
@@ -79,7 +77,8 @@
             cboFilme.MaxDropDownItems = 4;
             cboFilme.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.OUT;
             cboFilme.Name = "cboFilme";
-            cboFilme.Size = new Size(451, 49);
+            cboFilme.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            cboFilme.Size = new Size(590, 49);
             cboFilme.StartIndex = 0;
             cboFilme.TabIndex = 4;
             // 
@@ -101,7 +100,8 @@
             cboSala.MaxDropDownItems = 4;
             cboSala.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.OUT;
             cboSala.Name = "cboSala";
-            cboSala.Size = new Size(451, 49);
+            cboSala.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            cboSala.Size = new Size(590, 49);
             cboSala.StartIndex = 0;
             cboSala.TabIndex = 5;
             // 
@@ -116,9 +116,9 @@
             // 
             // dtpHora
             // 
-            dtpHora.CustomFormat = "dd/MM/yyyy HH:mm:ss";
+            dtpHora.CustomFormat = "HH:mm";
             dtpHora.Font = new Font("Segoe UI", 14F);
-            dtpHora.Format = DateTimePickerFormat.Time;
+            dtpHora.Format = DateTimePickerFormat.Custom;
             dtpHora.Location = new Point(266, 32);
             dtpHora.Name = "dtpHora";
             dtpHora.ShowUpDown = true;
@@ -196,10 +196,11 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(500, 439);
+            ClientSize = new Size(640, 450);
             Location = new Point(0, 0);
+            MinimumSize = new Size(640, 450);
             Name = "CadastroSessao";
-            Text = "CadastroSessao";
+            Text = "Cadastro de Sessão";
             tabPageCadastro.ResumeLayout(false);
             tabPageCadastro.PerformLayout();
             tabControlCadastro.ResumeLayout(false);

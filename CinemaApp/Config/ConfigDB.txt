@@ -1,1 +1,1 @@
-﻿Host=localhost;Port=5432;Database=CinemaDB;Username=postgres;Password=ifsp;
+﻿Host=localhost;Port=5432;Database=CinemaDB;Username=postgres;Password=ifsp

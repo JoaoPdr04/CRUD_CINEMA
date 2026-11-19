@@ -15,6 +15,7 @@ namespace CinemaApp.Cadastros
         private List<FilmeViewModel> _filmes = new();
         private List<SessaoViewModel> _sessoes = new();
         private List<IngressoItem> _itens = new();
+        private int _id;
 
         public CadastroIngresso(
             IBaseService<Ingresso> ingressoService,
@@ -27,6 +28,34 @@ namespace CinemaApp.Cadastros
             _sessaoService = sessaoService;
             _salaService = salaService;
             InitializeComponent();
+
+            InitializeComponent();
+
+            this.MinimumSize = Size.Empty;
+            this.MaximumSize = Size.Empty;
+            this.ClientSize = new Size(660, 620);
+
+            tabControlCadastro.Location = new Point(3, 64);
+            tabControlCadastro.Size = new Size(654, 550);
+            tabPageCadastro.Size = new Size(646, 522);
+
+            txtDocumento.Location = new Point(18, 12);
+            txtDocumento.Size = new Size(358, 48);
+            txtDataCompra.Location = new Point(391, 12);
+
+            dataGridViewIngressos.Location = new Point(18, 315);
+            dataGridViewIngressos.Size = new Size(610, 140);
+
+            btnCancelar.Location = new Point(448, 468);
+            btnSalvar.Location = new Point(552, 468);
+
+            txtDocumento.Location = new Point(18, 12);
+            txtDocumento.Size = new Size(358, 48);
+            txtDataCompra.Location = new Point(391, 12);
+            dataGridViewIngressos.Location = new Point(18, 312);
+            dataGridViewIngressos.Size = new Size(610, 105);
+            btnSalvar.Location = new Point(552, 425);
+            btnCancelar.Location = new Point(448, 425);
 
             ConfiguraGrid();
             cboFilme.SelectedIndexChanged += cboFilme_SelectedIndexChanged;
@@ -117,6 +146,11 @@ namespace CinemaApp.Cadastros
             cboSessao.DataSource = null;
             cboSessao.DataSource = _sessoes;
             cboSessao.SelectedIndex = -1;
+
+            // Avisa quando o filme não tem sessões futuras
+            cboSessao.Hint = cboFilme.SelectedItem != null && _sessoes.Count == 0
+                ? "Sessão (este filme não tem sessões futuras)"
+                : "Sessão";
         }
 
         private void LimpaDadosSessao()
@@ -129,7 +163,7 @@ namespace CinemaApp.Cadastros
         private void cboSessao_Format(object? sender, ListControlConvertEventArgs e)
         {
             if (e.ListItem is SessaoViewModel sessao)
-                e.Value = $"#{sessao.Id} - {sessao.Data:dd/MM/yyyy HH:mm} - R$ {sessao.Preco:N2}";
+                e.Value = $"{sessao.Data:dd/MM/yyyy HH:mm} - Sala {sessao.SalaNumero} - R$ {sessao.Preco:N2}";
         }
 
         private void cboSessao_SelectedIndexChanged(object? sender, EventArgs e)
@@ -168,7 +202,26 @@ namespace CinemaApp.Cadastros
                     return;
                 }
 
-                using var formularioAssentos = new SelecaoAssentosForm(sala, _itens);
+                // Reúne os assentos já escolhidos no ingresso atual + os já salvos no banco para esta sessão
+                var assentosOcupados = new List<IngressoItem>(_itens);
+                var todosIngressos = _ingressoService.ReadAll<Ingresso>().ToList();
+
+                foreach (var ing in todosIngressos)
+                {
+                    if (IsEditMode && ing.Id == _id)
+                        continue;
+
+                    var ingressoCompleto = (ing.Sessao != null && ing.IngressoItens != null && ing.IngressoItens.Count > 0)
+                        ? ing
+                        : _ingressoService.ReadById<Ingresso>(ing.Id);
+
+                    if (ingressoCompleto?.Sessao?.Id == sessao.Id && ingressoCompleto.IngressoItens != null)
+                    {
+                        assentosOcupados.AddRange(ingressoCompleto.IngressoItens);
+                    }
+                }
+
+                using var formularioAssentos = new SelecaoAssentosForm(sala, assentosOcupados);
                 if (formularioAssentos.ShowDialog(this) != DialogResult.OK)
                     return;
 
@@ -178,7 +231,8 @@ namespace CinemaApp.Cadastros
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro ao carregar a sala", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.InnerException?.Message ?? ex.Message, "Erro ao carregar a sala",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -256,7 +310,10 @@ namespace CinemaApp.Cadastros
 
             dataGridViewIngressos.EndEdit();
             ingresso.Documento = txtDocumento.Text.Trim();
-            ingresso.DataCompra = DateTime.Now;
+            // A data da compra só é definida na criação. Fica marcada como UTC apenas para o
+            // Npgsql aceitar (mesma ideia usada na Sessão: guarda o horário do relógio).
+            if (!IsEditMode)
+                ingresso.DataCompra = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
             ingresso.FormaPagamento = cboFormaPagamento.Text;
             ingresso.Sessao = _sessaoService.ReadById<Sessao>(Convert.ToInt32(cboSessao.SelectedValue));
             ingresso.IngressoItens = _itens;
@@ -292,7 +349,7 @@ namespace CinemaApp.Cadastros
             {
                 if (IsEditMode)
                 {
-                    var ingresso = _ingressoService.ReadById<Ingresso>(Convert.ToInt32(txtId.Text));
+                    var ingresso = _ingressoService.ReadById<Ingresso>(_id);
                     PreencheObjeto(ingresso);
                     _ingressoService.Update<Ingresso, Ingresso, IngressoValidator>(ingresso);
                 }
@@ -303,11 +360,13 @@ namespace CinemaApp.Cadastros
                     _ingressoService.Create<Ingresso, Ingresso, IngressoValidator>(ingresso);
                 }
 
+                IsEditMode = false;
+                CarregaGrid();
                 tabControlCadastro.SelectedIndex = 1;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.InnerException?.Message ?? ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -332,7 +391,7 @@ namespace CinemaApp.Cadastros
         {
             var id = Convert.ToInt32(row.Cells[nameof(IngressoViewModel.Id)].Value);
             var ingresso = _ingressoService.ReadById<Ingresso>(id);
-            txtId.Text = ingresso.Id.ToString();
+            _id = ingresso.Id;
             PreencheTela(ingresso);
         }
     }

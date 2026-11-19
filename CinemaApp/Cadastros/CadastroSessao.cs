@@ -45,8 +45,13 @@ namespace CinemaApp.Cadastros
 
         private void PreencheObjeto(Sessao sessao)
         {
-            sessao.Filme = _filmeService.ReadById<Filme>((int)cboFilme.SelectedValue);
-            sessao.Sala = _salaService.ReadById<Sala>((int)cboSala.SelectedValue);
+            if (cboFilme.SelectedValue == null)
+                throw new InvalidOperationException("Filme da sessão deve ser informado");
+            if (cboSala.SelectedValue == null)
+                throw new InvalidOperationException("Sala da sessão deve ser informada");
+
+            sessao.Filme = _filmeService.ReadById<Filme>(Convert.ToInt32(cboFilme.SelectedValue));
+            sessao.Sala = _salaService.ReadById<Sala>(Convert.ToInt32(cboSala.SelectedValue));
             var dataHora = dtpData.Value.Date + dtpHora.Value.TimeOfDay;
             sessao.Data = DateTime.SpecifyKind(dataHora, DateTimeKind.Utc);
 
@@ -58,9 +63,9 @@ namespace CinemaApp.Cadastros
         {
             cboFilme.SelectedItem = _filmes.FirstOrDefault(f => f.Id == sessao.Filme?.Id);
             cboSala.SelectedItem = _salas.FirstOrDefault(s => s.Id == sessao.Sala?.Id);
-            dtpData.Value = sessao.Data.ToLocalTime();
-            dtpHora.Value = DateTime.Today.Add(sessao.Data.ToLocalTime().TimeOfDay);
-            txtPreco.Text = (sessao.Preco * 100).ToString("F0");
+            dtpData.Value = sessao.Data;
+            dtpHora.Value = DateTime.Today.Add(sessao.Data.TimeOfDay);
+            txtPreco.Text = ((int)(sessao.Preco * 100)).ToString("D5");
         }
 
         protected override void Salvar()
@@ -106,6 +111,20 @@ namespace CinemaApp.Cadastros
         {
             _sessoes = _sessaoService.ReadAll<SessaoViewModel>().ToList();
             dataGridViewConsulta.DataSource = _sessoes;
+        }
+
+        protected override void AjustaColunasGrid()
+        {
+            base.AjustaColunasGrid();
+
+            var colunas = dataGridViewConsulta.Columns;
+            colunas["FilmeNome"].HeaderText = "Filme";
+            colunas["Classificacao"].HeaderText = "Classificação";
+            colunas["SalaNumero"].HeaderText = "Sala";
+            colunas["Data"].HeaderText = "Data e hora";
+            colunas["Data"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
+            colunas["Preco"].HeaderText = "Preço";
+            colunas["Preco"].DefaultCellStyle.Format = "C2";
         }
 
         protected override void CarregarRegistro(DataGridViewRow row)

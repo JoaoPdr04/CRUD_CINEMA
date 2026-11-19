@@ -13,6 +13,8 @@ namespace CinemaApp.Base
         public CadastroBase()
         {
             InitializeComponent();
+            dataGridViewConsulta.DataBindingComplete += (s, e) => AjustaColunasGrid();
+
         }
         #endregion
 
@@ -110,13 +112,51 @@ namespace CinemaApp.Base
         private void LimpaCampos()
         {
             IsEditMode = false;
-            foreach (var control in tabPageCadastro.Controls)
+            LimpaControles(tabPageCadastro);
+        }
+
+        // Percorre os controles (inclusive os dentro de painéis) e volta cada um ao estado inicial
+        private void LimpaControles(Control container)
+        {
+            foreach (Control control in container.Controls)
             {
-                if (control is MaterialTextBoxEdit)
-                    ((MaterialTextBoxEdit)control).Clear();
-                if (control is MaterialMaskedTextBox)
-                    ((MaterialMaskedTextBox)control).Clear();
+                switch (control)
+                {
+                    case MaterialTextBoxEdit texto:
+                        texto.Clear();
+                        break;
+                    case MaterialMaskedTextBox mascara:
+                        mascara.Clear();
+                        break;
+                    case ComboBox combo:
+                        combo.SelectedIndex = -1;
+                        break;
+                    case NumericUpDown numero:
+                        numero.Value = numero.Minimum;
+                        break;
+                    case DateTimePicker data:
+                        data.Value = DateTime.Now;
+                        break;
+                }
+
+                if (control.HasChildren)
+                    LimpaControles(control);
             }
+        }
+
+        protected virtual void AjustaColunasGrid()
+        {
+            dataGridViewConsulta.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewConsulta.RowHeadersVisible = false;
+
+            foreach (DataGridViewColumn coluna in dataGridViewConsulta.Columns)
+            {
+                if (coluna.Name != "Id" && coluna.Name.EndsWith("Id"))
+                    coluna.Visible = false;
+            }
+
+            if (dataGridViewConsulta.Columns["Id"] != null)
+                dataGridViewConsulta.Columns["Id"].FillWeight = 30;
         }
         #endregion
 

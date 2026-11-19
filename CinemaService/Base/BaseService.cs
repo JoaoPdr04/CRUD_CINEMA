@@ -2,7 +2,6 @@
 using CinemaDomain.Base;
 using CinemaRepository.Base;
 using FluentValidation;
-using Microsoft.IdentityModel.Tokens.Experimental;
 
 namespace CinemaService.Base
 {

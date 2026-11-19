@@ -16,12 +16,38 @@ namespace CinemaApp.Cadastros
         {
             _salaService = salaService;
             InitializeComponent();
+
+            InitializeComponent();
+
+            this.MinimumSize = Size.Empty;
+            this.MaximumSize = Size.Empty;
+            this.ClientSize = new Size(560, 385);
+
+            tabControlCadastro.Location = new Point(3, 64);
+            tabControlCadastro.Size = new Size(554, 318);
+            tabPageCadastro.Size = new Size(546, 290);
+
+            btnCancelar.Location = new Point(358, 242);
+            btnSalvar.Location = new Point(462, 242);
+
+            nudFileiras.Maximum = 10;
+            nudAssentos.Maximum = 10;
+
+            nudCapacidade.Enabled = false;
+            nudFileiras.ValueChanged += (s, e) => AtualizaCapacidade();
+            nudAssentos.ValueChanged += (s, e) => AtualizaCapacidade();
+            AtualizaCapacidade();
+        }
+
+        private void AtualizaCapacidade()
+        {
+            nudCapacidade.Value = nudFileiras.Value * nudAssentos.Value;
         }
 
         private void PreencheObjeto(Sala sala)
         {
             sala.Numero = (int)nudNumero.Value;
-            sala.Capacidade = (int)nudCapacidade.Value;
+            sala.Capacidade = (int)(nudFileiras.Value * nudAssentos.Value);
             sala.Fileiras = (int)nudFileiras.Value;
             sala.Assentos = (int)nudAssentos.Value;
         }
@@ -29,9 +55,9 @@ namespace CinemaApp.Cadastros
         private void PreencheTela(Sala sala)
         {
             nudNumero.Value = sala.Numero;
-            nudCapacidade.Value = sala.Numero;
-            nudFileiras.Value = sala.Fileiras;
             nudCapacidade.Value = sala.Capacidade;
+            nudFileiras.Value = sala.Fileiras;
+            nudAssentos.Value = sala.Assentos;
         }
 
         protected override void Salvar()

@@ -25,10 +25,9 @@ namespace CinemaService.Validators
                 .NotNull().WithMessage("Fileiras da sala devem ser informadas")
                 .InclusiveBetween(1, 10).WithMessage("Fileiras da sala devem estar entre 1 e 10");
 
-            RuleFor(s => s.Assentos)
-                .NotEmpty().WithMessage("Assentos da sala devem ser informados")
-                .NotNull().WithMessage("Assentos da sala devem ser informados")
-                .InclusiveBetween(1, 100).WithMessage("Assentos da sala devem estar entre 1 e 100");
+            RuleFor(s => s)
+                .Must(s => s.Capacidade == s.Fileiras * s.Assentos)
+                .WithMessage("A capacidade deve ser igual a fileiras x assentos");
         }
     }
 }
