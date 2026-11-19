@@ -17,7 +17,13 @@ namespace CinemaApp.Cadastros
             _salaService = salaService;
             InitializeComponent();
 
-            InitializeComponent();
+            nudFileiras.Maximum = 10;
+            nudAssentos.Maximum = 100;
+
+            nudCapacidade.Enabled = false;
+            nudFileiras.ValueChanged += (s, e) => AtualizaCapacidade();
+            nudAssentos.ValueChanged += (s, e) => AtualizaCapacidade();
+            AtualizaCapacidade();
 
             this.MinimumSize = Size.Empty;
             this.MaximumSize = Size.Empty;
