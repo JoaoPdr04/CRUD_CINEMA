@@ -30,6 +30,8 @@ namespace CinemaApp.Infra
             Services.AddScoped<IBaseRepository<Sala>, BaseRepository<Sala>>();
             Services.AddScoped<IBaseRepository<Sessao>, BaseRepository<Sessao>>();
             Services.AddScoped<IBaseRepository<Ingresso>, BaseRepository<Ingresso>>();
+            Services.AddScoped<IBaseRepository<IngressoItem>, BaseRepository<IngressoItem>>();
+
             #endregion
 
             #region Serviços Injeção de Dependência
@@ -38,6 +40,8 @@ namespace CinemaApp.Infra
             Services.AddScoped<IBaseService<Sala>, BaseService<Sala>>();
             Services.AddScoped<IBaseService<Sessao>, BaseService<Sessao>>();
             Services.AddScoped<IBaseService<Ingresso>, BaseService<Ingresso>>();
+            Services.AddScoped<IBaseService<IngressoItem>, BaseService<IngressoItem>>();
+
             #endregion
 
             #region AutoMapper Injeção de Dependência
@@ -56,6 +60,8 @@ namespace CinemaApp.Infra
                 config.CreateMap<Ingresso, IngressoViewModel>()
                     .ForMember(dest => dest.Filme, opt => opt.MapFrom(src => src.Sessao.Filme.Nome))
                     .ForMember(dest => dest.Classificacao, opt => opt.MapFrom(src => src.Sessao.Filme.Classificacao));
+
+                config.CreateMap<IngressoItem, IngressoItem>();
 
                 config.CreateMap<IngressoItem, IngressoItemViewModel>().ReverseMap();
             }, NullLoggerFactory.Instance);

@@ -1,4 +1,5 @@
-﻿using CinemaApp.Base;
+﻿using System.ComponentModel;
+using CinemaApp.Base;
 using CinemaApp.Models;
 using CinemaDomain;
 using CinemaService.Base;
@@ -9,26 +10,29 @@ namespace CinemaApp.Cadastros
     public partial class CadastroIngresso : CadastroBase
     {
         private readonly IBaseService<Ingresso> _ingressoService;
+        private readonly IBaseService<IngressoItem> _ingressoItemService;
         private readonly IBaseService<Filme> _filmeService;
         private readonly IBaseService<Sessao> _sessaoService;
         private readonly IBaseService<Sala> _salaService;
         private List<FilmeViewModel> _filmes = new();
         private List<SessaoViewModel> _sessoes = new();
-        private List<IngressoItem> _itens = new();
+        private BindingList<IngressoItem> _itens = new();
+        private HashSet<int> _idsItensOriginais = new();
         private int _id;
+        private int? _sessaoIdEdicao;
 
         public CadastroIngresso(
             IBaseService<Ingresso> ingressoService,
+            IBaseService<IngressoItem> ingressoItemService,
             IBaseService<Filme> filmeService,
             IBaseService<Sessao> sessaoService,
             IBaseService<Sala> salaService)
         {
             _ingressoService = ingressoService;
+            _ingressoItemService = ingressoItemService;
             _filmeService = filmeService;
             _sessaoService = sessaoService;
             _salaService = salaService;
-            InitializeComponent();
-
             InitializeComponent();
 
             this.MinimumSize = Size.Empty;
@@ -42,31 +46,23 @@ namespace CinemaApp.Cadastros
             txtDocumento.Location = new Point(18, 12);
             txtDocumento.Size = new Size(358, 48);
             txtDataCompra.Location = new Point(391, 12);
-
-            dataGridViewIngressos.Location = new Point(18, 315);
-            dataGridViewIngressos.Size = new Size(610, 140);
-
-            btnCancelar.Location = new Point(448, 468);
-            btnSalvar.Location = new Point(552, 468);
-
-            txtDocumento.Location = new Point(18, 12);
-            txtDocumento.Size = new Size(358, 48);
-            txtDataCompra.Location = new Point(391, 12);
             dataGridViewIngressos.Location = new Point(18, 312);
             dataGridViewIngressos.Size = new Size(610, 105);
             btnSalvar.Location = new Point(552, 425);
             btnCancelar.Location = new Point(448, 425);
 
             ConfiguraGrid();
+            VinculaGrid();
+
             cboFilme.SelectedIndexChanged += cboFilme_SelectedIndexChanged;
             cboSessao.SelectedIndexChanged += cboSessao_SelectedIndexChanged;
-            cboSessao.Format += cboSessao_Format;
             btnAdicionar.Click += btnAdicionar_Click;
             btnRemover.Click += btnRemover_Click;
+            dataGridViewIngressos.CurrentCellDirtyStateChanged += dataGridViewIngressos_CurrentCellDirtyStateChanged;
             dataGridViewIngressos.CellValueChanged += dataGridViewIngressos_CellValueChanged;
             dataGridViewIngressos.CellFormatting += dataGridViewIngressos_CellFormatting;
             dataGridViewIngressos.DataError += dataGridViewIngressos_DataError;
-            dataGridViewIngressos.RowsRemoved += dataGridViewIngressos_RowsRemoved;
+
             CarregaFilmes();
         }
 
@@ -85,13 +81,15 @@ namespace CinemaApp.Cadastros
             {
                 DataPropertyName = nameof(IngressoItem.Fileira),
                 HeaderText = "Fileira",
-                Name = nameof(IngressoItem.Fileira)
+                Name = nameof(IngressoItem.Fileira),
+                ReadOnly = true
             });
             dataGridViewIngressos.Columns.Add(new DataGridViewTextBoxColumn
             {
                 DataPropertyName = nameof(IngressoItem.Assento),
                 HeaderText = "Assento",
-                Name = nameof(IngressoItem.Assento)
+                Name = nameof(IngressoItem.Assento),
+                ReadOnly = true
             });
             dataGridViewIngressos.Columns.Add(new DataGridViewCheckBoxColumn
             {
@@ -112,12 +110,19 @@ namespace CinemaApp.Cadastros
             });
         }
 
+        private void VinculaGrid()
+        {
+            dataGridViewIngressos.DataSource = _itens;
+            txtQuantidade.Text = _itens.Count.ToString();
+            AtualizaValorTotal();
+        }
+
         private void CarregaFilmes()
         {
             _filmes = _filmeService.ReadAll<FilmeViewModel>().ToList();
+            cboFilme.DataSource = null;
             cboFilme.DisplayMember = nameof(FilmeViewModel.Nome);
             cboFilme.ValueMember = nameof(FilmeViewModel.Id);
-            cboFilme.DataSource = null;
             cboFilme.DataSource = _filmes;
             cboFilme.SelectedIndex = -1;
         }
@@ -131,23 +136,24 @@ namespace CinemaApp.Cadastros
                 CarregaSessoes(Array.Empty<SessaoViewModel>());
                 return;
             }
+
             txtClassificacao.Text = filme.Classificacao;
 
             CarregaSessoes(_sessaoService.ReadAll<SessaoViewModel>()
-                .Where(sessao => sessao.FilmeId == filme.Id && sessao.Data > DateTime.Now)
+                .Where(sessao => sessao.FilmeId == filme.Id &&
+                                 (sessao.Data > DateTime.Now || (IsEditMode && sessao.Id == _sessaoIdEdicao)))
                 .OrderBy(sessao => sessao.Data));
         }
 
         private void CarregaSessoes(IEnumerable<SessaoViewModel> sessoes)
         {
             _sessoes = sessoes.ToList();
-            cboSessao.DisplayMember = nameof(SessaoViewModel.Id);
-            cboSessao.ValueMember = nameof(SessaoViewModel.Id);
             cboSessao.DataSource = null;
+            cboSessao.DisplayMember = nameof(SessaoViewModel.Descricao);
+            cboSessao.ValueMember = nameof(SessaoViewModel.Id);
             cboSessao.DataSource = _sessoes;
             cboSessao.SelectedIndex = -1;
 
-            // Avisa quando o filme não tem sessões futuras
             cboSessao.Hint = cboFilme.SelectedItem != null && _sessoes.Count == 0
                 ? "Sessão (este filme não tem sessões futuras)"
                 : "Sessão";
@@ -160,37 +166,45 @@ namespace CinemaApp.Cadastros
             txtDataFilme.Clear();
         }
 
-        private void cboSessao_Format(object? sender, ListControlConvertEventArgs e)
-        {
-            if (e.ListItem is SessaoViewModel sessao)
-                e.Value = $"{sessao.Data:dd/MM/yyyy HH:mm} - Sala {sessao.SalaNumero} - R$ {sessao.Preco:N2}";
-        }
-
         private void cboSessao_SelectedIndexChanged(object? sender, EventArgs e)
         {
             if (cboSessao.SelectedItem is not SessaoViewModel sessao)
             {
                 txtClassificacao.Clear();
                 txtDataFilme.Clear();
+                AtualizaValorTotal();
                 return;
             }
 
             txtDataFilme.Text = sessao.Data.ToString("dd/MM/yyyy HH:mm");
             txtClassificacao.Text = sessao.Classificacao;
             AtualizaValorTotal();
+            dataGridViewIngressos.Refresh();
+        }
+
+        private List<IngressoItem> BuscarItensDoIngresso(int ingressoId)
+        {
+            // Carrega ingressos e itens no mesmo escopo para o EF Core vincular a navegação Ingresso
+            var ingressos = _ingressoService.ReadAll<Ingresso>().ToList();
+            var todosItens = _ingressoItemService.ReadAll<IngressoItem>().ToList();
+
+            var ingressoAlvo = ingressos.FirstOrDefault(i => i.Id == ingressoId);
+            if (ingressoAlvo?.IngressoItens != null && ingressoAlvo.IngressoItens.Count > 0)
+                return ingressoAlvo.IngressoItens.ToList();
+
+            return todosItens
+                .Where(item => item.Ingresso != null && item.Ingresso.Id == ingressoId)
+                .ToList();
         }
 
         private void btnAdicionar_Click(object? sender, EventArgs e)
         {
-            if (cboSessao.SelectedIndex < 0)
+            if (cboSessao.SelectedIndex < 0 || cboSessao.SelectedItem is not SessaoViewModel sessao)
             {
                 MessageBox.Show("Selecione uma sessão antes de adicionar um ingresso.", "Atenção",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-
-            if (cboSessao.SelectedItem is not SessaoViewModel sessao)
-                return;
 
             try
             {
@@ -202,31 +216,36 @@ namespace CinemaApp.Cadastros
                     return;
                 }
 
-                // Reúne os assentos já escolhidos no ingresso atual + os já salvos no banco para esta sessão
+                // Reúne apenas os assentos ainda presentes na tela + assentos de OUTROS ingressos no banco
                 var assentosOcupados = new List<IngressoItem>(_itens);
                 var todosIngressos = _ingressoService.ReadAll<Ingresso>().ToList();
+                var todosItensBanco = _ingressoItemService.ReadAll<IngressoItem>().ToList();
 
                 foreach (var ing in todosIngressos)
                 {
                     if (IsEditMode && ing.Id == _id)
                         continue;
 
-                    var ingressoCompleto = (ing.Sessao != null && ing.IngressoItens != null && ing.IngressoItens.Count > 0)
-                        ? ing
-                        : _ingressoService.ReadById<Ingresso>(ing.Id);
-
-                    if (ingressoCompleto?.Sessao?.Id == sessao.Id && ingressoCompleto.IngressoItens != null)
+                    if (ing.Sessao?.Id == sessao.Id)
                     {
-                        assentosOcupados.AddRange(ingressoCompleto.IngressoItens);
+                        var itensDoIngresso = (ing.IngressoItens != null && ing.IngressoItens.Count > 0)
+                            ? ing.IngressoItens
+                            : todosItensBanco.Where(it => it.Ingresso != null && it.Ingresso.Id == ing.Id).ToList();
+
+                        assentosOcupados.AddRange(itensDoIngresso);
                     }
                 }
 
-                using var formularioAssentos = new SelecaoAssentosForm(sala, assentosOcupados);
+                using var formularioAssentos = new SelecaoAssentos(sala, assentosOcupados);
                 if (formularioAssentos.ShowDialog(this) != DialogResult.OK)
                     return;
 
-                _itens.AddRange(formularioAssentos.ItensSelecionados);
-                AtualizaGrid();
+                foreach (var novoItem in formularioAssentos.ItensSelecionados)
+                {
+                    _itens.Add(novoItem);
+                }
+
+                txtQuantidade.Text = _itens.Count.ToString();
                 AtualizaValorTotal();
             }
             catch (Exception ex)
@@ -245,31 +264,52 @@ namespace CinemaApp.Cadastros
                 return;
             }
 
-            var item = dataGridViewIngressos.SelectedRows[0].DataBoundItem as IngressoItem;
-            if (item is not null)
-                _itens.Remove(item);
+            int rowIndex = dataGridViewIngressos.SelectedRows[0].Index;
+            if (rowIndex < 0 || rowIndex >= _itens.Count)
+                return;
 
-            AtualizaGrid();
+            dataGridViewIngressos.EndEdit();
+            dataGridViewIngressos.ClearSelection();
+            _itens.RemoveAt(rowIndex);
+
+            txtQuantidade.Text = _itens.Count.ToString();
             AtualizaValorTotal();
+        }
+
+        private void dataGridViewIngressos_CurrentCellDirtyStateChanged(object? sender, EventArgs e)
+        {
+            if (dataGridViewIngressos.IsCurrentCellDirty)
+            {
+                dataGridViewIngressos.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
         }
 
         private void dataGridViewIngressos_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
-                AtualizaValorTotal();
+            if (e.RowIndex < 0 || e.RowIndex >= _itens.Count)
+                return;
+
+            AtualizaValorTotal();
+
+            if (dataGridViewIngressos.Columns["Valor"] != null)
+            {
+                dataGridViewIngressos.InvalidateCell(dataGridViewIngressos.Columns["Valor"].Index, e.RowIndex);
+            }
         }
 
         private void dataGridViewIngressos_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.RowIndex < 0 || dataGridViewIngressos.Columns[e.ColumnIndex].Name != "Valor")
+            if (e.RowIndex < 0 || e.RowIndex >= _itens.Count ||
+                e.ColumnIndex < 0 || e.ColumnIndex >= dataGridViewIngressos.Columns.Count)
                 return;
 
-            if (dataGridViewIngressos.Rows[e.RowIndex].DataBoundItem is IngressoItem item)
-            {
-                var valor = item.MeiaEntrada ? PrecoSessao / 2 : PrecoSessao;
-                e.Value = valor.ToString("C2");
-                e.FormattingApplied = true;
-            }
+            if (dataGridViewIngressos.Columns[e.ColumnIndex].Name != "Valor")
+                return;
+
+            var item = _itens[e.RowIndex];
+            var valor = item.MeiaEntrada ? PrecoSessao / 2 : PrecoSessao;
+            e.Value = valor.ToString("C2");
+            e.FormattingApplied = true;
         }
 
         private void dataGridViewIngressos_DataError(object? sender, DataGridViewDataErrorEventArgs e)
@@ -277,25 +317,7 @@ namespace CinemaApp.Cadastros
             e.ThrowException = false;
         }
 
-        private void dataGridViewIngressos_RowsRemoved(object? sender, DataGridViewRowsRemovedEventArgs e)
-        {
-            AtualizaValorTotal();
-        }
-
-        private void AtualizaGrid()
-        {
-            dataGridViewIngressos.DataSource = null;
-            dataGridViewIngressos.DataSource = _itens;
-            txtQuantidade.Text = _itens.Count.ToString();
-        }
-
-        private decimal PrecoSessao
-        {
-            get
-            {
-                return cboSessao.SelectedItem is SessaoViewModel sessao ? sessao.Preco : 0;
-            }
-        }
+        private decimal PrecoSessao => cboSessao.SelectedItem is SessaoViewModel sessao ? sessao.Preco : 0;
 
         private void AtualizaValorTotal()
         {
@@ -310,13 +332,13 @@ namespace CinemaApp.Cadastros
 
             dataGridViewIngressos.EndEdit();
             ingresso.Documento = txtDocumento.Text.Trim();
-            // A data da compra só é definida na criação. Fica marcada como UTC apenas para o
-            // Npgsql aceitar (mesma ideia usada na Sessão: guarda o horário do relógio).
+
             if (!IsEditMode)
                 ingresso.DataCompra = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
             ingresso.FormaPagamento = cboFormaPagamento.Text;
             ingresso.Sessao = _sessaoService.ReadById<Sessao>(Convert.ToInt32(cboSessao.SelectedValue));
-            ingresso.IngressoItens = _itens;
+            ingresso.IngressoItens = _itens.ToList();
             ingresso.ValorTotal = _itens.Sum(item => item.MeiaEntrada ? ingresso.Sessao.Preco / 2 : ingresso.Sessao.Preco);
         }
 
@@ -324,18 +346,47 @@ namespace CinemaApp.Cadastros
         {
             txtDocumento.Text = ingresso.Documento;
             txtDataCompra.Text = ingresso.DataCompra.ToString("dd/MM/yyyy HH:mm");
-            cboFormaPagamento.SelectedItem = ingresso.FormaPagamento;
-            cboSessao.SelectedValue = ingresso.Sessao?.Id;
-            _itens = ingresso.IngressoItens ?? new List<IngressoItem>();
-            AtualizaGrid();
+            cboFormaPagamento.SelectedIndex = cboFormaPagamento.FindStringExact(ingresso.FormaPagamento ?? string.Empty);
+
+            var itensCarregados = BuscarItensDoIngresso(ingresso.Id);
+            _idsItensOriginais = itensCarregados.Where(i => i.Id > 0).Select(i => i.Id).ToHashSet();
+            _itens = new BindingList<IngressoItem>(itensCarregados);
+            VinculaGrid();
+
+            if (ingresso.Sessao != null)
+            {
+                _sessaoIdEdicao = ingresso.Sessao.Id;
+
+                var sessaoVm = _sessaoService.ReadAll<SessaoViewModel>()
+                    .FirstOrDefault(s => s.Id == ingresso.Sessao.Id);
+
+                int filmeId = sessaoVm?.FilmeId ?? ingresso.Sessao.Filme?.Id ?? 0;
+
+                if (filmeId > 0)
+                    cboFilme.SelectedValue = filmeId;
+
+                cboSessao.SelectedValue = ingresso.Sessao.Id;
+
+                if (cboSessao.SelectedItem is SessaoViewModel sessaoSelecionada)
+                {
+                    txtDataFilme.Text = sessaoSelecionada.Data.ToString("dd/MM/yyyy HH:mm");
+                    txtClassificacao.Text = sessaoSelecionada.Classificacao;
+                }
+            }
+
             AtualizaValorTotal();
+            dataGridViewIngressos.Refresh();
         }
 
         protected override void Novo()
         {
             base.Novo();
-            _itens = new List<IngressoItem>();
-            AtualizaGrid();
+            _id = 0;
+            _sessaoIdEdicao = null;
+            _idsItensOriginais.Clear();
+            _itens = new BindingList<IngressoItem>();
+            VinculaGrid();
+
             txtDataCompra.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
             cboSessao.SelectedIndex = -1;
             cboFilme.SelectedIndex = -1;
@@ -347,8 +398,17 @@ namespace CinemaApp.Cadastros
         {
             try
             {
+                dataGridViewIngressos.EndEdit();
+
                 if (IsEditMode)
                 {
+                    // Exclui definitivamente no PostgreSQL os assentos que foram removidos na tela
+                    var idsAtuais = _itens.Where(i => i.Id > 0).Select(i => i.Id).ToHashSet();
+                    foreach (var idRemovido in _idsItensOriginais.Where(id => !idsAtuais.Contains(id)))
+                    {
+                        _ingressoItemService.Delete(idRemovido);
+                    }
+
                     var ingresso = _ingressoService.ReadById<Ingresso>(_id);
                     PreencheObjeto(ingresso);
                     _ingressoService.Update<Ingresso, Ingresso, IngressoValidator>(ingresso);
@@ -361,6 +421,8 @@ namespace CinemaApp.Cadastros
                 }
 
                 IsEditMode = false;
+                _sessaoIdEdicao = null;
+                _idsItensOriginais.Clear();
                 CarregaGrid();
                 tabControlCadastro.SelectedIndex = 1;
             }
@@ -392,6 +454,7 @@ namespace CinemaApp.Cadastros
             var id = Convert.ToInt32(row.Cells[nameof(IngressoViewModel.Id)].Value);
             var ingresso = _ingressoService.ReadById<Ingresso>(id);
             _id = ingresso.Id;
+            IsEditMode = true;
             PreencheTela(ingresso);
         }
     }

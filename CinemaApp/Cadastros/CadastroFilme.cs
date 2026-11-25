@@ -20,8 +20,6 @@ namespace CinemaApp.Cadastros
             _generoService = generoService;
             InitializeComponent();
 
-            InitializeComponent();
-
             this.MinimumSize = Size.Empty;
             this.MaximumSize = Size.Empty;
             this.ClientSize = new Size(560, 445);
@@ -41,9 +39,10 @@ namespace CinemaApp.Cadastros
             try
             {
                 var generos = _generoService.ReadAll<GeneroViewModel>().ToList();
-                cboGenero.DataSource = generos;
+                cboGenero.DataSource = null;
                 cboGenero.DisplayMember = nameof(GeneroViewModel.Nome);
                 cboGenero.ValueMember = nameof(GeneroViewModel.Id);
+                cboGenero.DataSource = generos;
                 cboGenero.SelectedIndex = -1;
             }
             catch (Exception ex)
@@ -61,10 +60,13 @@ namespace CinemaApp.Cadastros
             int.TryParse(txtDuracao.Text, out int duracao);
             filme.Duracao = duracao;
 
-            if (cboGenero.SelectedValue != null)
+            if (cboGenero.SelectedItem is GeneroViewModel generoSelecionado)
             {
-                int idGenero = Convert.ToInt32(cboGenero.SelectedValue);
-                filme.Genero = _generoService.ReadById<Genero>(idGenero);
+                filme.Genero = _generoService.ReadById<Genero>(generoSelecionado.Id);
+            }
+            else
+            {
+                filme.Genero = null;
             }
         }
 
@@ -108,16 +110,32 @@ namespace CinemaApp.Cadastros
 
         protected override void CarregaGrid()
         {
-            _filmes = _filmeService.ReadAll<FilmeViewModel>().ToList();
+            _filmes = _filmeService.ReadAll<FilmeViewModel>().OrderBy(f => f.Id).ToList();
             dataGridViewConsulta.DataSource = _filmes;
+        }
 
-            dataGridViewConsulta.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewConsulta.MultiSelect = false;
+        protected override void AjustaColunasGrid()
+        {
+            base.AjustaColunasGrid();
 
-            if (dataGridViewConsulta.Columns["GeneroId"] != null)
-            {
-                dataGridViewConsulta.Columns["GeneroId"].Visible = false;
-            }
+            var colunas = dataGridViewConsulta.Columns;
+
+            if (colunas["GeneroId"] != null)
+                colunas["GeneroId"].Visible = false;
+
+            if (colunas["Classificacao"] != null)
+                colunas["Classificacao"].HeaderText = "Classificação";
+
+            if (colunas["Duracao"] != null)
+                colunas["Duracao"].HeaderText = "Duração (min)";
+
+            if (colunas["GeneroNome"] != null)
+                colunas["GeneroNome"].HeaderText = "Gênero";
+
+            dataGridViewConsulta.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+
+            if (colunas["Nome"] != null)
+                colunas["Nome"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
         }
 
         protected override void CarregarRegistro(DataGridViewRow row)

@@ -13,8 +13,6 @@ namespace CinemaRepository.Base
             _myDBContext = myDBContext;
         }
 
-        // Consulta sem rastreamento, já trazendo as propriedades de navegação
-        // (ex.: o Genero de um Filme). Sem o Include, filme.Genero vinha sempre nulo.
         protected virtual IQueryable<TypeEntity> Consulta()
         {
             IQueryable<TypeEntity> query = _myDBContext.Set<TypeEntity>().AsNoTracking();
@@ -25,8 +23,6 @@ namespace CinemaRepository.Base
                 foreach (var navegacao in entityType.GetNavigations())
                 {
                     query = query.Include(navegacao.Name);
-
-                    // Segundo nível (ex.: Ingresso -> Sessao -> Filme), sem voltar para a própria entidade
                     foreach (var subNavegacao in navegacao.TargetEntityType.GetNavigations()
                                  .Where(n => !n.IsCollection && n.TargetEntityType != entityType))
                     {
@@ -37,9 +33,6 @@ namespace CinemaRepository.Base
             return query;
         }
 
-        // Os relacionamentos (ex.: o Genero de um Filme) JÁ EXISTEM no banco.
-        // Sem isto, o EF tenta INSERIR o Genero junto com o Filme e dá
-        // "duplicar valor da chave viola a restrição PK_Genero".
         private void AnexarRelacionamentos(TypeEntity entity)
         {
             var entityType = _myDBContext.Model.FindEntityType(typeof(TypeEntity));
@@ -51,7 +44,6 @@ namespace CinemaRepository.Base
                 if (propriedade?.GetValue(entity) is not BaseEntity relacionado || relacionado.Id == 0)
                     continue;
 
-                // Se o DbContext já rastreia esse registro, reaproveita a mesma instância
                 var rastreada = _myDBContext.ChangeTracker.Entries()
                     .Select(e => e.Entity)
                     .OfType<BaseEntity>()
@@ -60,7 +52,7 @@ namespace CinemaRepository.Base
                 if (rastreada != null)
                     propriedade.SetValue(entity, rastreada);
                 else
-                    _myDBContext.Attach(relacionado); // existente: fica Unchanged (não insere)
+                    _myDBContext.Attach(relacionado);
             }
         }
 
@@ -83,12 +75,10 @@ namespace CinemaRepository.Base
 
         public void Update(TypeEntity entity)
         {
-            // Procura se o DbContext já possui essa entidade rastreada em memória
             var local = _myDBContext.Set<TypeEntity>()
                                     .Local
                                     .FirstOrDefault(entry => entry.Id.Equals(entity.Id));
 
-            // Se existir, remove o rastreamento antigo para dar lugar à nova alteração
             if (local != null)
             {
                 _myDBContext.Entry(local).State = EntityState.Detached;

@@ -109,7 +109,7 @@ namespace CinemaApp.Cadastros
 
         protected override void CarregaGrid()
         {
-            _sessoes = _sessaoService.ReadAll<SessaoViewModel>().ToList();
+            _sessoes = _sessaoService.ReadAll<SessaoViewModel>().OrderBy(s => s.Id).ToList();
             dataGridViewConsulta.DataSource = _sessoes;
         }
 
@@ -118,6 +118,16 @@ namespace CinemaApp.Cadastros
             base.AjustaColunasGrid();
 
             var colunas = dataGridViewConsulta.Columns;
+
+            if (colunas["Descricao"] != null)
+                colunas["Descricao"].Visible = false;
+
+            if (colunas["FilmeId"] != null)
+                colunas["FilmeId"].Visible = false;
+
+            if (colunas["SalaId"] != null)
+                colunas["SalaId"].Visible = false;
+
             colunas["FilmeNome"].HeaderText = "Filme";
             colunas["Classificacao"].HeaderText = "Classificação";
             colunas["SalaNumero"].HeaderText = "Sala";
@@ -125,6 +135,9 @@ namespace CinemaApp.Cadastros
             colunas["Data"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
             colunas["Preco"].HeaderText = "Preço";
             colunas["Preco"].DefaultCellStyle.Format = "C2";
+
+            dataGridViewConsulta.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            colunas["FilmeNome"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
         }
 
         protected override void CarregarRegistro(DataGridViewRow row)

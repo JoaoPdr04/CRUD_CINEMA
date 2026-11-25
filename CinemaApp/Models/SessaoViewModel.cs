@@ -10,4 +10,6 @@ public class SessaoViewModel
     public DateTime Data { get; set; }
     public decimal Preco { get; set; }
     public int SalaNumero { get; set; }
+
+    public string Descricao => $"{Data:dd/MM/yyyy HH:mm} - Sala {SalaNumero} - R$ {Preco:N2}";
 }

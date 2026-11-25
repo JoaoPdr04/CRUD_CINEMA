@@ -1,31 +1,39 @@
 ﻿using CinemaDomain;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CinemaRepository.Mapping
 {
-    public class IngressoItemMap : IEntityTypeConfiguration<Ingresso>
+    public class IngressoItemMap : IEntityTypeConfiguration<Ingresso>, IEntityTypeConfiguration<IngressoItem>
     {
-        public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Ingresso> builder)
+        public void Configure(EntityTypeBuilder<Ingresso> builder)
         {
             builder.ToTable("INGRESSO");
             builder.HasKey(x => x.Id);
+            builder.Property(x => x.Documento);
             builder.Property(x => x.DataCompra);
-            builder.Property(x => x.Sessao);
             builder.Property(x => x.ValorTotal);
             builder.Property(x => x.FormaPagamento);
-            builder.HasMany(x => x.IngressoItens).WithOne(x => x.Ingresso).OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.Sessao)
+                   .WithMany();
+
+            builder.HasMany(x => x.IngressoItens)
+                   .WithOne(x => x.Ingresso)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
 
-        public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<IngressoItem> builder)
+        public void Configure(EntityTypeBuilder<IngressoItem> builder)
         {
             builder.ToTable("INGRESSO_ITEM");
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Assento);
             builder.Property(x => x.Fileira);
-            builder.HasOne(x => x.Ingresso).WithMany(x => x.IngressoItens).OnDelete(DeleteBehavior.Cascade);
+            builder.Property(x => x.MeiaEntrada);
+
+            builder.HasOne(x => x.Ingresso)
+                   .WithMany(x => x.IngressoItens)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

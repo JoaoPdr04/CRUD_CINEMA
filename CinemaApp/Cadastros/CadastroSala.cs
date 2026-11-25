@@ -75,12 +75,28 @@ namespace CinemaApp.Cadastros
                     var id = Convert.ToInt32(txtId.Text);
                     var sala = _salaService.ReadById<Sala>(id);
                     PreencheObjeto(sala);
+
+                    if (NumeroSalaJaExiste(sala.Numero, id))
+                    {
+                        MessageBox.Show($"Já existe uma sala cadastrada com o número {sala.Numero}.", "Atenção",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     _salaService.Update<Sala, Sala, SalaValidator>(sala);
                 }
                 else
                 {
                     var sala = new Sala();
                     PreencheObjeto(sala);
+
+                    if (NumeroSalaJaExiste(sala.Numero, 0))
+                    {
+                        MessageBox.Show($"Já existe uma sala cadastrada com o número {sala.Numero}.", "Atenção",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     _salaService.Create<Sala, Sala, SalaValidator>(sala);
                 }
 
@@ -90,6 +106,12 @@ namespace CinemaApp.Cadastros
             {
                 MessageBox.Show(ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private bool NumeroSalaJaExiste(int numero, int idAtual)
+        {
+            return _salaService.ReadAll<Sala>()
+                .Any(s => s.Numero == numero && s.Id != idAtual);
         }
 
         protected override void Deletar(int id)

@@ -48,6 +48,8 @@
             tabPageCadastro.Controls.Add(cboSala);
             tabPageCadastro.Controls.Add(dtpData);
             tabPageCadastro.Controls.Add(dtpHora);
+            tabPageCadastro.Controls.SetChildIndex(btnCancelar, 0);
+            tabPageCadastro.Controls.SetChildIndex(btnSalvar, 0);
             tabPageCadastro.Controls.SetChildIndex(dtpHora, 0);
             tabPageCadastro.Controls.SetChildIndex(dtpData, 0);
             tabPageCadastro.Controls.SetChildIndex(cboSala, 0);
@@ -56,11 +58,9 @@
             tabPageCadastro.Controls.SetChildIndex(materialLabel2, 0);
             tabPageCadastro.Controls.SetChildIndex(txtPreco, 0);
             // 
-            // tabControlCadastro
-            // 
-            // 
             // cboFilme
             // 
+            cboFilme.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             cboFilme.AutoResize = false;
             cboFilme.BackColor = Color.FromArgb(255, 255, 255);
             cboFilme.Depth = 0;
@@ -77,13 +77,13 @@
             cboFilme.MaxDropDownItems = 4;
             cboFilme.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.OUT;
             cboFilme.Name = "cboFilme";
-            cboFilme.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            cboFilme.Size = new Size(590, 49);
+            cboFilme.Size = new Size(491, 49);
             cboFilme.StartIndex = 0;
             cboFilme.TabIndex = 4;
             // 
             // cboSala
             // 
+            cboSala.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             cboSala.AutoResize = false;
             cboSala.BackColor = Color.FromArgb(255, 255, 255);
             cboSala.Depth = 0;
@@ -100,8 +100,7 @@
             cboSala.MaxDropDownItems = 4;
             cboSala.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.OUT;
             cboSala.Name = "cboSala";
-            cboSala.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            cboSala.Size = new Size(590, 49);
+            cboSala.Size = new Size(491, 49);
             cboSala.StartIndex = 0;
             cboSala.TabIndex = 5;
             // 
@@ -153,7 +152,7 @@
             txtPreco.InsertKeyMode = InsertKeyMode.Default;
             txtPreco.LeadingIcon = null;
             txtPreco.Location = new Point(18, 220);
-            txtPreco.Mask = "$ 009.99";
+            txtPreco.Mask = "$ 09.99";
             txtPreco.MaxLength = 32767;
             txtPreco.MouseState = ReaLTaiizor.Helper.MaterialDrawHelper.MaterialMouseState.OUT;
             txtPreco.Name = "txtPreco";
@@ -167,13 +166,13 @@
             txtPreco.RightToLeft = RightToLeft.No;
             txtPreco.SelectedText = "";
             txtPreco.SelectionLength = 0;
-            txtPreco.SelectionStart = 9;
+            txtPreco.SelectionStart = 8;
             txtPreco.ShortcutsEnabled = true;
             txtPreco.Size = new Size(209, 48);
             txtPreco.SkipLiterals = true;
             txtPreco.TabIndex = 9;
             txtPreco.TabStop = false;
-            txtPreco.Text = "  100";
+            txtPreco.Text = "1000";
             txtPreco.TextAlign = HorizontalAlignment.Right;
             txtPreco.TextMaskFormat = MaskFormat.ExcludePromptAndLiterals;
             txtPreco.TrailingIcon = null;

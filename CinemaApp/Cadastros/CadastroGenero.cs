@@ -1,4 +1,5 @@
 ﻿using CinemaApp.Base;
+using CinemaApp.Models;
 using CinemaDomain;
 using CinemaService.Base;
 using CinemaService.Validators;
@@ -63,7 +64,8 @@ namespace CinemaApp.Cadastros
 
         protected override void CarregaGrid()
         {
-            _generos = _generoService.ReadAll<Genero>().ToList();
+            //_generos = _generoService.ReadAll<Genero>().ToList();
+            _generos = _generoService.ReadAll<Genero>().OrderBy(g => g.Id).ToList();
             dataGridViewConsulta.DataSource = _generos;
 
             // Configura o DataGridView para selecionar a linha inteira ao clicar em qualquer célula

@@ -16,7 +16,6 @@ namespace CinemaRepository.Context
 
         public MyDBContext(DbContextOptions<MyDBContext> options) : base(options)
         {
-           // Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,7 +25,7 @@ namespace CinemaRepository.Context
             modelBuilder.Entity<Filme>(new FilmeMap().Configure);
             modelBuilder.Entity<Sala>(new SalaMap().Configure);
             modelBuilder.Entity<Sessao>(new SessaoMap().Configure);
-            //modelBuilder.Entity<Ingresso>(new IngressoMap().Configure);
+            modelBuilder.Entity<Ingresso>(new IngressoItemMap().Configure);
             modelBuilder.Entity<IngressoItem>(new IngressoItemMap().Configure);
         }
 

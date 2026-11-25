@@ -102,7 +102,7 @@ namespace CinemaRepository.Migrations
 
                     b.HasIndex("SessaoId");
 
-                    b.ToTable("Ingresso");
+                    b.ToTable("INGRESSO", (string)null);
                 });
 
             modelBuilder.Entity("CinemaDomain.IngressoItem", b =>
